@@ -3,8 +3,7 @@ const controllers = require("../controllers");
 const router = express.Router();
 
 router.route("/heading")
-  .get(controllers.getAllHeading)
-  .post(controllers.searchHeading);
+  .get(controllers.getAllHeading);
 
 router.route("/add-scheduled")
   .post(controllers.addScheduled);
@@ -17,9 +16,8 @@ router.route("/delete-scheduled")
 
 router.route("/department")
   .get(controllers.getDepartment)
-  .post(controllers.searchDepartment);
 
 router.route('/detail')
-  .post(controllers.getDetail)
+  .get(controllers.getDetail)
 
 module.exports = router;

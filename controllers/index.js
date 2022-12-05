@@ -3,86 +3,6 @@ const conn = require("../services/db");
 const { formatDate } = require("../utils/common");
 
 exports.getAllHeading = (req, res, next) => {
-  const query = `
-    SELECT
-      h.DENPYONO,
-      h.BUMONCD_YKANR,
-      d.BUMONNM,
-      h.DENPYODT,
-      h.UKETUKEDT,
-      h.SUITOKB,
-      h.BIKO,
-      h.KINGAKU,
-      h.SHIHARAIDT
-    FROM heading h
-    INNER JOIN department d ON d.BUMONCD = h.BUMONCD_YKANR
-    ORDER BY h.DENPYONO
-  `;
-  conn.query(query, function (err, data, fields) {
-    if(err) return next(new AppError(err))
-    res.status(200).json(data);
-  });
- };
-
-exports.getDepartment = (req, res, next) => {
-  const query = `
-    SELECT
-      d.*
-    FROM department d
-  `;
-  conn.query(query, function (err, data, fields) {
-    if(err) return next(new AppError(err))
-    res.status(200).json(data);
-  });
- };
-
-exports.getDetail = (req, res, next) => {
-  const query = `
-    SELECT
-      d.GYONO,
-      d.DENPYONO,
-      d.IDODT,
-      d.SHUPPATSUPLC,
-      d.MOKUTEKIPLC,
-      d.KEIRO,
-      d.KINGAKU
-    FROM detail d
-    WHERE d.DENPYONO = ${req.body.id}
-  `;
-  conn.query(query, function (err, data, fields) {
-    if(err) return next(new AppError(err))
-    res.status(200).json(data);
-  });
- };
-
-exports.searchDepartment = (req, res, next) => {
-  let conditions = '';
-
-  const {
-    departmentCode,
-    departmentName
-  } = req.body;
-
-  if(departmentCode) {
-    conditions += `AND d.BUMONCD = ${departmentCode} `;
-  }
-  if(departmentName) {
-    conditions += `AND d.BUMONNM like '%${departmentName}%' `;
-  }
-
-  let query = `
-    SELECT
-      d.*
-    FROM department d
-    WHERE TRUE ${conditions}
-  `;
-  conn.query(query, function (err, data, fields) {
-    if(err) return next(new AppError(err))
-    res.status(200).json(data);
-  });
- };
-
-exports.searchHeading = (req, res, next) => {
 
   let conditions = '';
   const {
@@ -94,7 +14,7 @@ exports.searchHeading = (req, res, next) => {
     endDate,
     accountingMethod1,
     accountingMethod2
-  } = req.body;
+  } = req.query;
 
   if(slipNumber_from && slipNumber_to) {
     conditions += `AND h.DENPYONO BETWEEN ${slipNumber_from} AND ${slipNumber_to} `;
@@ -147,6 +67,52 @@ exports.searchHeading = (req, res, next) => {
 
   conn.query(query, function (err, data, fields) {
     if(err) return next(new AppError(err));
+    res.status(200).json(data);
+  });
+ };
+
+ exports.getDepartment = (req, res, next) => {
+  let conditions = '';
+
+  const {
+    departmentCode,
+    departmentName
+  } = req.query;
+
+  if(departmentCode) {
+    conditions += `AND d.BUMONCD = ${departmentCode} `;
+  }
+  if(departmentName) {
+    conditions += `AND d.BUMONNM like '%${departmentName}%' `;
+  }
+
+  let query = `
+    SELECT
+      d.*
+    FROM department d
+    WHERE TRUE ${conditions}
+  `;
+  conn.query(query, function (err, data, fields) {
+    if(err) return next(new AppError(err))
+    res.status(200).json(data);
+  });
+ };
+
+exports.getDetail = (req, res, next) => {
+  const query = `
+    SELECT
+      d.GYONO,
+      d.DENPYONO,
+      d.IDODT,
+      d.SHUPPATSUPLC,
+      d.MOKUTEKIPLC,
+      d.KEIRO,
+      d.KINGAKU
+    FROM detail d
+    WHERE d.DENPYONO = ${req.query.id}
+  `;
+  conn.query(query, function (err, data, fields) {
+    if(err) return next(new AppError(err))
     res.status(200).json(data);
   });
  };
