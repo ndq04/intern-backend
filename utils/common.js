@@ -4,3 +4,5 @@ exports.formatDate = (value) => {
   const d = new Date(value);
   return `${d.getFullYear()}-${adjust(d.getMonth() + 1)}-${adjust(d.getDate())}`;
 };
+
+exports.NOW = `localtimestamp`;

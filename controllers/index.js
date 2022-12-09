@@ -1,6 +1,6 @@
 const AppError = require("../utils/appError");
 const conn = require("../services/db");
-const { formatDate } = require("../utils/common");
+const { formatDate, NOW } = require("../utils/common");
 
 exports.getAllHeading = (req, res, next) => {
 
@@ -126,7 +126,7 @@ exports.addScheduled = (req, res, next) => {
   }
 
   const query = `
-    INSERT INTO heading (DENPYODT, SUITOKB, SHIHARAIDT, KAIKEIND, UKETUKEDT, BUMONCD_YKANR, BIKO) 
+    INSERT INTO heading (DENPYODT, SUITOKB, SHIHARAIDT, KAIKEIND, UKETUKEDT, BUMONCD_YKANR, BIKO, INSERT_DATE, INSERT_PGM_ID, INSERT_PGM_PRM, UPDATE_PGM_ID, UPDATE_PGM_PRM) 
     VALUES (
       '${input.slipDate}',
       '${input.accountingMethod}',
@@ -134,7 +134,12 @@ exports.addScheduled = (req, res, next) => {
       '${input.year}',
       '${input.applicationDateDate}',
       '${input.departmentCode}',
-      '${input.comment}'
+      '${input.comment}',
+       ${NOW},
+      'AWCYO26001',
+      '00000',
+      'AWCYO26001',
+      '00000'
     )
   `
   conn.query(
@@ -162,7 +167,8 @@ exports.updateScheduled = (req, res, next) => {
       SHIHARAIDT = '${input.paymentDueDate}',
       UKETUKEDT = '${input.applicationDateDate}',
       BUMONCD_YKANR = '${input.departmentCode}',
-      BIKO = '${input.comment}'
+      BIKO = '${input.comment}',
+      UPDATE_DATE = ${NOW}
     WHERE DENPYONO = ${input.slipNumber}
   `;
   conn.query(
@@ -190,3 +196,30 @@ exports.deleteScheduled = (req, res, next) => {
     }
   );
  };
+
+exports.addDetail = (req, res, next) => {
+  if (!req.body) return next(new AppError("No form data found", 404));
+  const input = req.body;
+
+  let query = `INSERT INTO detail (DENPYONO, IDODT, SHUPPATSUPLC, MOKUTEKIPLC, KEIRO, KINGAKU) VALUES
+  `;
+  
+  query += ' (';
+  for(let i=0; i<input.length; i++) {
+    if(i > 0){
+      query += `), (`;
+    } 
+    query += `${input[i].DENPYONO}, '${input[i].IDODT}', '${input[i].SHUPPATSUPLC}', '${input[i].MOKUTEKIPLC}', '${input[i].KEIRO}', ${input[i].KINGAKU}`;
+  }
+  query += ')';
+  conn.query(
+    query,
+    function (err, data, fields) {
+      if (err) return next(new AppError(err, 500));
+      res.status(200).json({
+        result: data,
+        message: "success",
+      });
+    }
+  );
+};

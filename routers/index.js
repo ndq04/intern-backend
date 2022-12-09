@@ -20,4 +20,7 @@ router.route("/department")
 router.route('/detail')
   .get(controllers.getDetail)
 
+router.route('/add-detail')
+.post(controllers.addDetail)
+
 module.exports = router;
