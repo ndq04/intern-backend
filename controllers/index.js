@@ -107,7 +107,8 @@ exports.getDetail = (req, res, next) => {
       d.SHUPPATSUPLC,
       d.MOKUTEKIPLC,
       d.KEIRO,
-      d.KINGAKU
+      d.KINGAKU,
+      d.CHECKDELETE
     FROM detail d
     WHERE d.DENPYONO = ${req.query.id}
   `;
@@ -159,13 +160,13 @@ exports.updateScheduled = (req, res, next) => {
   const input = {
     ...req.body,
     paymentDueDate: formatDate(req.body.paymentDueDate),
-    applicationDateDate: formatDate(req.body.applicationDateDate)
+    applicationDate: formatDate(req.body.applicationDate)
   }
   const query = `
     UPDATE heading
     SET SUITOKB = '${input.accountingMethod}',
       SHIHARAIDT = '${input.paymentDueDate}',
-      UKETUKEDT = '${input.applicationDateDate}',
+      UKETUKEDT = '${input.applicationDate}',
       BUMONCD_YKANR = '${input.departmentCode}',
       BIKO = '${input.comment}',
       UPDATE_DATE = ${NOW}
@@ -199,9 +200,12 @@ exports.deleteScheduled = (req, res, next) => {
 
 exports.addDetail = (req, res, next) => {
   if (!req.body) return next(new AppError("No form data found", 404));
-  const input = req.body;
+  const input = [...req.body].map(item => ({
+    ...item,
+    CHECKDELETE: item.CHECKDELETE === false ? '0' : '1'
+  }));
 
-  let query = `INSERT INTO detail (DENPYONO, IDODT, SHUPPATSUPLC, MOKUTEKIPLC, KEIRO, KINGAKU) VALUES
+  let query = `INSERT INTO detail (DENPYONO, IDODT, SHUPPATSUPLC, MOKUTEKIPLC, KEIRO, KINGAKU, CHECKDELETE) VALUES
   `;
   
   query += ' (';
@@ -209,7 +213,7 @@ exports.addDetail = (req, res, next) => {
     if(i > 0){
       query += `), (`;
     } 
-    query += `${input[i].DENPYONO}, '${input[i].IDODT}', '${input[i].SHUPPATSUPLC}', '${input[i].MOKUTEKIPLC}', '${input[i].KEIRO}', ${input[i].KINGAKU}`;
+    query += `${input[i].DENPYONO}, '${input[i].IDODT}', '${input[i].SHUPPATSUPLC}', '${input[i].MOKUTEKIPLC}', '${input[i].KEIRO}', ${input[i].KINGAKU}, ${input[i].CHECKDELETE}`;
   }
   query += ')';
   conn.query(
@@ -223,3 +227,47 @@ exports.addDetail = (req, res, next) => {
     }
   );
 };
+
+exports.updateDetail = (req, res, next) => {
+  if (!req.body) return next(new AppError("No form data found", 404));
+  const input = {
+    ...req.body,
+    CHECKDELETE: req.body.CHECKDELETE === false ? '0' : '1'
+  };
+
+  const query = `
+    UPDATE detail
+    SET IDODT = '${input.IDODT}',
+        SHUPPATSUPLC = '${input.SHUPPATSUPLC}',
+        MOKUTEKIPLC = '${input.MOKUTEKIPLC}',
+        KEIRO = '${input.KEIRO}',
+        KINGAKU = '${input.KINGAKU}',
+        CHECKDELETE = '${input.CHECKDELETE}',
+        UPDATE_DATE = ${NOW}
+    WHERE GYONO = ${input.GYONO};`;
+
+  conn.query(
+    query,
+    function (err, data, fields) {
+      if (err) return next(new AppError(err, 500));
+      res.status(200).json({
+        result: data,
+        message: "success",
+      });
+    }
+  );
+};
+
+exports.deleteDetail = (req, res, next) => {
+  const input = {...req.body};
+  const query = `DELETE FROM detail WHERE GYONO = ${input.GYONO};`;
+  conn.query(
+    query,
+    function (err, fields) {
+      if (err) return next(new AppError(err, 500));
+      res.status(200).json({
+        message: "success",
+      });
+    }
+  );
+ };

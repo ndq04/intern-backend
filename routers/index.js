@@ -21,6 +21,12 @@ router.route('/detail')
   .get(controllers.getDetail)
 
 router.route('/add-detail')
-.post(controllers.addDetail)
+  .post(controllers.addDetail)
+
+router.route('/update-detail')
+  .post(controllers.updateDetail)
+
+router.route('/delete-detail')
+  .post(controllers.deleteDetail)
 
 module.exports = router;
