@@ -123,7 +123,7 @@ exports.addScheduled = (req, res, next) => {
   const input = {
     ...req.body,
     paymentDueDate: formatDate(req.body.paymentDueDate),
-    applicationDateDate: formatDate(req.body.applicationDateDate)
+    applicationDate: formatDate(req.body.applicationDate)
   }
 
   const query = `
@@ -133,7 +133,7 @@ exports.addScheduled = (req, res, next) => {
       '${input.accountingMethod}',
       '${input.paymentDueDate}',
       '${input.year}',
-      '${input.applicationDateDate}',
+      '${input.applicationDate}',
       '${input.departmentCode}',
       '${input.comment}',
        ${NOW},
@@ -185,10 +185,11 @@ exports.updateScheduled = (req, res, next) => {
  };
 
 exports.deleteScheduled = (req, res, next) => {
-  conn.query("DELETE FROM detail WHERE DENPYONO=?", [req.body.id]);
+  const id = req.body.id;
+  conn.query("DELETE FROM detail WHERE DENPYONO=?", [id]);
   conn.query(
     "DELETE FROM heading WHERE DENPYONO=?",
-    [req.body.id],
+    [id],
     function (err, fields) {
       if (err) return next(new AppError(err, 500));
       res.status(200).json({
